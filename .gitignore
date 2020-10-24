@@ -1,0 +1,4 @@
+.vcpkg/
+output/
+plans/
+vcpkg-binary-cache/

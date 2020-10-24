@@ -1,0 +1,39 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+    "name": "recoil-engine-libs",
+    "version": "1.0.0",
+    "description": "Static libraries for Recoil Engine",
+    "dependencies": [
+        "zlib",
+        "libpng",
+        "giflib",
+        "libjpeg-turbo",
+        "tiff",
+        {
+            "name": "devil",
+            "default-features": false,
+            "features": ["libpng", "libjpeg", "tiff", "openexr"]
+        },
+        {
+            "name": "libunwind",
+            "platform": "linux"
+        },
+        "openssl",
+        "nghttp2",
+        "libpsl",
+        "curl",
+        "libogg",
+        "libvorbis",
+        {
+            "name": "libuuid",
+            "platform": "linux"
+        },
+        "liblzma",
+        "minizip",
+        "freetype",
+        "fontconfig",
+        "sdl2",
+        "openal-soft"
+    ],
+    "builtin-baseline": "0e0d8418201552f3040135f9f2ac947f1637e06a"
+}

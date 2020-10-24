@@ -1,0 +1,118 @@
+name: Build Static Libraries
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (e.g. v1.0.0) — leave empty to build without publishing'
+        required: false
+        type: string
+  pull_request:
+  push:
+    branches: [master]
+    tags: ['v*']
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-amd64
+            triplet: x64-linux-generic
+            runner: ubuntu-latest
+          - target: linux-arm64
+            triplet: arm64-linux
+            runner: ubuntu-24.04-arm
+          - target: mingw
+            triplet: x64-mingw-static
+            runner: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build base image
+        if: matrix.target != 'mingw'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/base.Dockerfile
+          tags: recoil-libs-base:latest
+          load: true
+          cache-from: type=gha,scope=base-${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=base-${{ matrix.target }}
+
+      - name: Build ${{ matrix.target }} image
+        run: |
+          docker build \
+            ${{ matrix.target != 'mingw' && '--build-arg BASE_IMAGE=recoil-libs-base:latest' || '' }} \
+            -t recoil-libs-${{ matrix.target }}:latest \
+            -f docker/${{ matrix.target }}.Dockerfile \
+            .
+
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v5
+        with:
+          path: vcpkg-binary-cache
+          key: vcpkg-${{ matrix.triplet }}-${{ hashFiles('vcpkg/vcpkg.json', 'vcpkg/overlay-ports/**') }}
+          restore-keys: vcpkg-${{ matrix.triplet }}-
+
+      - name: Build libraries
+        run: |
+          mkdir -p output vcpkg-binary-cache
+          docker run --rm \
+            -v "$(pwd)/vcpkg-binary-cache:/cache/vcpkg-binary-cache" \
+            -v "$(pwd)/output:/build/recoil-libs/output" \
+            -v "$(pwd)/buildlogs:/build/vcpkg/buildtrees" \
+            recoil-libs-${{ matrix.target }}:latest
+
+      - name: Dump build failure logs
+        if: failure()
+        run: |
+          for f in buildlogs/*/install-*-out.log buildlogs/*/config-*-out.log; do
+            [ -f "$f" ] || continue
+            echo "=== $f ==="
+            tail -80 "$f"
+            echo ""
+          done
+
+      - name: Package output
+        run: |
+          tar -czf recoil-libs-${{ matrix.triplet }}.tar.gz \
+            -C output/installed/${{ matrix.triplet }} .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: recoil-libs-${{ matrix.triplet }}
+          path: recoil-libs-${{ matrix.triplet }}.tar.gz
+          retention-days: 7
+
+  release:
+    name: Publish Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
+          name: ${{ inputs.release_tag || github.ref_name }}
+          files: recoil-libs-*.tar.gz
+          fail_on_unmatched_files: true
