@@ -1,0 +1,63 @@
+FROM ubuntu:20.04
+
+# Avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    curl \
+    wget \
+    pkg-config \
+    libgl1-mesa-dev \
+    libglu1-mesa-dev \
+    libx11-dev \
+    libxext-dev \
+    libxrandr-dev \
+    libxinerama-dev \
+    libxcursor-dev \
+    libxi-dev \
+    python3 \
+    python3-pip \
+    autoconf \
+    autoconf-archive \
+    automake \
+    libtool \
+    unzip \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install GCC 13 from ubuntu-toolchain-r/test PPA
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get install -y gcc-13 g++-13 && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 130 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 130 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set up working directory
+WORKDIR /build
+
+# Clone and bootstrap vcpkg
+RUN git clone https://github.com/microsoft/vcpkg.git /build/vcpkg && \
+    /build/vcpkg/bootstrap-vcpkg.sh
+
+# Set environment variables
+ENV VCPKG_ROOT=/build/vcpkg
+ENV PATH="${VCPKG_ROOT}:${PATH}"
+
+# Copy vcpkg configuration files
+COPY vcpkg/ /build/spring-static-libs/vcpkg/
+
+# Set working directory to project
+WORKDIR /build/spring-static-libs
+
+# Make build script executable
+RUN chmod +x vcpkg/build.sh
+
+# Default command
+CMD ["./vcpkg/build.sh", "generic"]

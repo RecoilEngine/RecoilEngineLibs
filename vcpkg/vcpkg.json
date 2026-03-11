@@ -1,0 +1,27 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+    "name": "spring-static-libs",
+    "version": "1.0.0",
+    "description": "Static libraries for Spring RTS engine",
+    "dependencies": [
+        "zlib",
+        "libpng",
+        "giflib",
+        "libjpeg-turbo",
+        "tiff",
+        "devil",
+        "libunwind",
+        "glew",
+        "openssl",
+        "nghttp2",
+        "libpsl",
+        "curl",
+        "libogg",
+        "libvorbis",
+        "libuuid",
+        "liblzma",
+        "minizip",
+        "freetype"
+    ],
+    "builtin-baseline": "62159a45e18f3a9ac0548628dcaf74fcb60c6ff9"
+}
