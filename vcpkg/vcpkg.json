@@ -9,19 +9,28 @@
         "giflib",
         "libjpeg-turbo",
         "tiff",
-        "devil",
-        "libunwind",
-        "glew",
+        {
+            "name": "devil",
+            "features": ["libpng", "libjpeg", "tiff", "openexr"]
+        },
+        {
+            "name": "libunwind",
+            "platform": "linux"
+        },
         "openssl",
         "nghttp2",
         "libpsl",
         "curl",
         "libogg",
         "libvorbis",
-        "libuuid",
+        {
+            "name": "libuuid",
+            "platform": "linux"
+        },
         "liblzma",
         "minizip",
-        "freetype"
+        "freetype",
+        "fontconfig"
     ],
     "builtin-baseline": "62159a45e18f3a9ac0548628dcaf74fcb60c6ff9"
 }

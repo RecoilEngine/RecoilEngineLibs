@@ -19,9 +19,15 @@ case $ARCH_INPUT in
     arm64)
         TRIPLET="arm64-linux"
         ;;
+    mingw-static|x64-mingw-static)
+        TRIPLET="x64-mingw-static"
+        ;;
+    mingw-dynamic|x64-mingw-dynamic)
+        TRIPLET="x64-mingw-dynamic"
+        ;;
     *)
         echo "Unknown architecture: $ARCH_INPUT"
-        echo "Supported architectures: generic, nehalem, arm64"
+        echo "Supported architectures: generic, nehalem, arm64, mingw-static, mingw-dynamic"
         exit 1
         ;;
 esac

@@ -27,6 +27,8 @@ RUN apt-get update && apt-get install -y \
     libtool \
     unzip \
     zip \
+    mingw-w64 \
+    mingw-w64-tools \
     && rm -rf /var/lib/apt/lists/*
 
 # Install GCC 13 from ubuntu-toolchain-r/test PPA
