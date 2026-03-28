@@ -3,6 +3,7 @@ set(VCPKG_CRT_LINKAGE static)
 set(VCPKG_LIBRARY_LINKAGE static)
 set(VCPKG_BUILD_TYPE release)
 
+# OpenAL Soft is built as a DLL (OpenAL32.dll) — shipped alongside the executable.
 if(PORT STREQUAL "openal-soft")
     set(VCPKG_LIBRARY_LINKAGE dynamic)
 endif()
@@ -16,11 +17,11 @@ set(VCPKG_C_FLAGS "-mtune=generic -march=x86-64 -D_WIN32_WINNT=0x0601")
 set(VCPKG_CXX_FLAGS "-mtune=generic -march=x86-64 -D_WIN32_WINNT=0x0601")
 set(VCPKG_LINKER_FLAGS "")
 
-# C++17 standard requirement
-set(VCPKG_CMAKE_CONFIGURE_OPTIONS
-    -DCMAKE_CXX_STANDARD=17
-    -DCMAKE_CXX_STANDARD_REQUIRED=ON
-)
+# Let each port choose its own C++ standard (OpenAL Soft requires C++20).
+# set(VCPKG_CMAKE_CONFIGURE_OPTIONS
+#     -DCMAKE_CXX_STANDARD=17
+#     -DCMAKE_CXX_STANDARD_REQUIRED=ON
+# )
 
 # This tells vcpkg to use the MinGW toolchain
 # vcpkg automatically loads scripts/toolchains/mingw.cmake when this is set

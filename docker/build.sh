@@ -35,7 +35,7 @@ case $TARGET in
     base)         build_base ;;
     linux-amd64)  build_base && build_linux_amd64 ;;
     linux-arm64)  build_base && build_linux_arm64 ;;
-    mingw)        build_base && build_mingw ;;
+    mingw)        build_mingw ;;
     all)          build_base && build_linux_amd64 && build_linux_arm64 && build_mingw ;;
     *)
         echo "Usage: $0 [base|linux-amd64|linux-arm64|mingw|all]"

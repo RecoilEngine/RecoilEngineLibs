@@ -81,8 +81,10 @@ echo "Running vcpkg install with binary caching..."
 echo "Copying libraries to output directory..."
 mkdir -p "$OUTPUT_DIR/lib"
 mkdir -p "$OUTPUT_DIR/include"
+mkdir -p "$OUTPUT_DIR/bin"
 cp -r "$OUTPUT_DIR/installed/$TRIPLET/lib/"* "$OUTPUT_DIR/lib/" 2>/dev/null || true
 cp -r "$OUTPUT_DIR/installed/$TRIPLET/include/"* "$OUTPUT_DIR/include/" 2>/dev/null || true
+cp -r "$OUTPUT_DIR/installed/$TRIPLET/bin/"* "$OUTPUT_DIR/bin/" 2>/dev/null || true
 
 echo ""
 echo "=== Build complete ==="
