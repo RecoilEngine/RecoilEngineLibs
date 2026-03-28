@@ -11,6 +11,9 @@ on:
   push:
     branches: [master]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     name: ${{ matrix.target }}
@@ -26,13 +29,13 @@ jobs:
             triplet: x64-mingw-static
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build base image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: docker/base.Dockerfile
@@ -50,7 +53,7 @@ jobs:
             .
 
       - name: Cache vcpkg binary packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: vcpkg-binary-cache
           key: vcpkg-${{ matrix.triplet }}-${{ hashFiles('vcpkg/vcpkg.json', 'vcpkg/ports/**') }}
@@ -70,7 +73,7 @@ jobs:
             -C output/installed/${{ matrix.triplet }} .
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: recoil-libs-${{ matrix.triplet }}
           path: recoil-libs-${{ matrix.triplet }}.tar.gz
@@ -85,7 +88,7 @@ jobs:
       contents: write
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           merge-multiple: true
 
