@@ -72,6 +72,7 @@ fi
 echo "Running vcpkg install with binary caching..."
 "$VCPKG_ROOT/vcpkg" install \
     --triplet="$TRIPLET" \
+    --overlay-triplets="$SCRIPT_DIR/triplets" \
     --overlay-ports="$SCRIPT_DIR/ports" \
     --x-manifest-root="$SCRIPT_DIR" \
     --x-install-root="$OUTPUT_DIR/installed" \
