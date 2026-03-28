@@ -71,7 +71,18 @@ jobs:
           docker run --rm \
             -v "$(pwd)/vcpkg-binary-cache:/cache/vcpkg-binary-cache" \
             -v "$(pwd)/output:/build/recoil-libs/output" \
+            -v "$(pwd)/buildlogs:/build/vcpkg/buildtrees" \
             recoil-libs-${{ matrix.target }}:latest
+
+      - name: Dump build failure logs
+        if: failure()
+        run: |
+          for f in buildlogs/*/install-*-out.log buildlogs/*/config-*-out.log; do
+            [ -f "$f" ] || continue
+            echo "=== $f ==="
+            tail -80 "$f"
+            echo ""
+          done
 
       - name: Package output
         run: |
