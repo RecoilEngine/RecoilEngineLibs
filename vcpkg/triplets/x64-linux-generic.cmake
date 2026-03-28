@@ -10,9 +10,6 @@ set(VCPKG_LINKER_FLAGS "")
 set(VCPKG_CMAKE_CONFIGURE_OPTIONS
     -DCMAKE_CXX_STANDARD=17
     -DCMAKE_CXX_STANDARD_REQUIRED=ON
-    # SDL2: ibus requires dbus, which only supports dynamic linkage.
-    # Disable ibus at the CMake level so the static build does not pull in dbus.
-    -DSDL_IBUS=OFF
 )
 
 set(VCPKG_CMAKE_SYSTEM_NAME Linux)

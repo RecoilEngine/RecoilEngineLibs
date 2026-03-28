@@ -16,19 +16,6 @@ RUN apt-get update && apt-get install -y \
     zip \
     python3 \
     python3-pip \
-    libx11-dev \
-    libxext-dev \
-    libxrandr-dev \
-    libxinerama-dev \
-    libxi-dev \
-    libxfixes-dev \
-    libxcursor-dev \
-    libxss-dev \
-    libwayland-dev \
-    libxkbcommon-dev \
-    libegl1-mesa-dev \
-    libasound2-dev \
-    libibus-1.0-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install autoconf 2.71 from source.

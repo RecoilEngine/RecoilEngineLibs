@@ -31,17 +31,7 @@
         "liblzma",
         "minizip",
         "freetype",
-        "fontconfig",
-        {
-            "name": "sdl2",
-            "default-features": false,
-            "features": [
-                { "name": "x11",     "platform": "linux" },
-                { "name": "wayland", "platform": "linux" },
-                { "name": "alsa",    "platform": "linux" },
-                { "name": "ibus",    "platform": "linux" }
-            ]
-        }
+        "fontconfig"
     ],
     "builtin-baseline": "0e0d8418201552f3040135f9f2ac947f1637e06a"
 }
