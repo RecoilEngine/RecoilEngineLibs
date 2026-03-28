@@ -4,6 +4,8 @@ vcpkg_from_github(
     REF 4.1.0
     SHA512 9ea5dde14acd2f7d1efd0e38b11017b679d3aaabac61552f9c5f4c7f45f2563543e0fbb2d74429c6b1b9c37d8728ebc4f1cf0efad5f71807c11bb8a2a681a556
     HEAD_REF master
+    PATCHES
+        use-imported-targets.patch
 )
 
 vcpkg_cmake_configure(
@@ -26,6 +28,7 @@ vcpkg_cmake_configure(
 )
 
 vcpkg_cmake_install()
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/minizip)
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig()
 

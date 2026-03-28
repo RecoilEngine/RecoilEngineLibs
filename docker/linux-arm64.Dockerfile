@@ -3,14 +3,11 @@ FROM ${BASE_IMAGE}
 
 # Install GCC 13 from ubuntu-toolchain-r/test PPA and system development
 # libraries needed by SDL2, DevIL, fontconfig, etc.
-RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
     apt-get update && \
     apt-get install -y \
         gcc-13 \
         g++-13 \
-        python3-venv \
         ninja-build \
         linux-libc-dev \
         libgl1-mesa-dev \
