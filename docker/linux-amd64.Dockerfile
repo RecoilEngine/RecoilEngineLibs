@@ -22,7 +22,6 @@ RUN apt-get update && \
         libxft-dev \
         libasound2-dev \
         libpulse-dev \
-        libaudio-dev \
         libdrm-dev \
         libgbm-dev \
         libwayland-dev \
