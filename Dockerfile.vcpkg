@@ -38,7 +38,10 @@ RUN apt-get update && \
     apt-get install -y gcc-13 g++-13 && \
     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 130 && \
     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 130 && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    # Switch MinGW to POSIX threading model so std::thread / std::mutex are available
+    update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix && \
+    update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
 
 # Install autoconf 2.71 from source.
 # Ubuntu 20.04 ships autoconf 2.69, but gperf 3.3 (a vcpkg host tool) requires >= 2.70.
