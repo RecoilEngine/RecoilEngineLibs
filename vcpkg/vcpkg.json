@@ -31,7 +31,8 @@
         "liblzma",
         "minizip",
         "freetype",
-        "fontconfig"
+        "fontconfig",
+        "sdl2"
     ],
     "builtin-baseline": "0e0d8418201552f3040135f9f2ac947f1637e06a"
 }

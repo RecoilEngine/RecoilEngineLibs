@@ -65,7 +65,7 @@ jobs:
           mkdir -p output vcpkg-binary-cache
           docker run --rm \
             -v "$(pwd)/vcpkg-binary-cache:/cache/vcpkg-binary-cache" \
-            -v "$(pwd)/output:/build/spring-static-libs/output" \
+            -v "$(pwd)/output:/build/recoil-libs/output" \
             recoil-libs-${{ matrix.target }}:latest
 
       - name: Package output

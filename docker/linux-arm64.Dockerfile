@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y \
     && ln -sf /usr/bin/aarch64-linux-gnu-g++-10 /usr/bin/aarch64-linux-gnu-g++ \
     && rm -rf /var/lib/apt/lists/*
 
-COPY vcpkg/ /build/spring-static-libs/vcpkg/
-WORKDIR /build/spring-static-libs
+COPY vcpkg/ /build/recoil-libs/vcpkg/
+WORKDIR /build/recoil-libs
 RUN chmod +x vcpkg/build.sh
 
 CMD ["./vcpkg/build.sh", "arm64"]

@@ -12,8 +12,8 @@ RUN apt-get update && apt-get install -y \
         --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix \
     && rm -rf /var/lib/apt/lists/*
 
-COPY vcpkg/ /build/spring-static-libs/vcpkg/
-WORKDIR /build/spring-static-libs
+COPY vcpkg/ /build/recoil-libs/vcpkg/
+WORKDIR /build/recoil-libs
 RUN chmod +x vcpkg/build.sh
 
 CMD ["./vcpkg/build.sh", "mingw-static"]
