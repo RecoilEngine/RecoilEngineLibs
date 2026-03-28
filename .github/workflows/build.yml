@@ -42,15 +42,12 @@ jobs:
           cache-to: type=gha,mode=max,scope=base
 
       - name: Build ${{ matrix.target }} image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/${{ matrix.target }}.Dockerfile
-          tags: recoil-libs-${{ matrix.target }}:latest
-          load: true
-          build-args: BASE_IMAGE=recoil-libs-base:latest
-          cache-from: type=gha,scope=${{ matrix.target }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.target }}
+        run: |
+          docker build \
+            --build-arg BASE_IMAGE=recoil-libs-base:latest \
+            -t recoil-libs-${{ matrix.target }}:latest \
+            -f docker/${{ matrix.target }}.Dockerfile \
+            .
 
       - name: Cache vcpkg binary packages
         uses: actions/cache@v4
