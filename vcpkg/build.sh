@@ -8,6 +8,11 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 VCPKG_ROOT=${VCPKG_ROOT:-$PROJECT_ROOT/.vcpkg}
 OUTPUT_DIR=${OUTPUT_DIR:-$PROJECT_ROOT/output}
 
+# Binary cache configuration for vcpkg
+# Set VCPKG_BINARY_CACHE to enable binary caching across container runs
+# Example: docker run -v ~/.cache/vcpkg:/cache ...
+VCPKG_BINARY_CACHE=${VCPKG_BINARY_CACHE:-/cache/vcpkg-binary-cache}
+
 # Map architecture input to triplet
 case $ARCH_INPUT in
     generic)
@@ -37,6 +42,7 @@ echo "Architecture: $ARCH_INPUT"
 echo "Triplet: $TRIPLET"
 echo "VCPKG_ROOT: $VCPKG_ROOT"
 echo "Output directory: $OUTPUT_DIR"
+echo "Binary cache: $VCPKG_BINARY_CACHE"
 echo ""
 
 # Ensure vcpkg is available
@@ -52,13 +58,21 @@ echo "Installing custom triplets..."
 mkdir -p "$VCPKG_ROOT/triplets/community"
 cp "$SCRIPT_DIR/triplets/"*.cmake "$VCPKG_ROOT/triplets/community/"
 
-# Build with vcpkg
-echo "Running vcpkg install..."
+# Ensure binary cache directory exists
+if [ ! -d "$VCPKG_BINARY_CACHE" ]; then
+    echo "Creating binary cache directory: $VCPKG_BINARY_CACHE"
+    mkdir -p "$VCPKG_BINARY_CACHE"
+fi
+
+# Build with vcpkg using binary caching
+# The binarysource flag enables caching compiled packages to avoid rebuilding
+echo "Running vcpkg install with binary caching..."
 "$VCPKG_ROOT/vcpkg" install \
     --triplet="$TRIPLET" \
     --overlay-ports="$SCRIPT_DIR/ports" \
     --x-manifest-root="$SCRIPT_DIR" \
-    --x-install-root="$OUTPUT_DIR/installed"
+    --x-install-root="$OUTPUT_DIR/installed" \
+    --binarysource="clear;files,$VCPKG_BINARY_CACHE,readwrite"
 
 # Copy final libraries to output
 echo "Copying libraries to output directory..."

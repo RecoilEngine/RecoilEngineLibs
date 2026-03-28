@@ -11,6 +11,7 @@
         "tiff",
         {
             "name": "devil",
+            "default-features": false,
             "features": ["libpng", "libjpeg", "tiff", "openexr"]
         },
         {
@@ -32,5 +33,5 @@
         "freetype",
         "fontconfig"
     ],
-    "builtin-baseline": "62159a45e18f3a9ac0548628dcaf74fcb60c6ff9"
+    "builtin-baseline": "0e0d8418201552f3040135f9f2ac947f1637e06a"
 }
