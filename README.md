@@ -39,7 +39,11 @@ Install system dependencies (Ubuntu/Debian):
 sudo apt-get install -y \
     build-essential cmake git curl wget \
     pkg-config autoconf-archive automake libtool \
-    unzip zip python3
+    unzip zip python3 \
+    libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxi-dev \
+    libxfixes-dev libxcursor-dev libxss-dev \
+    libwayland-dev libxkbcommon-dev libegl1-mesa-dev \
+    libasound2-dev libibus-1.0-dev
 ```
 
 > **Note:** vcpkg host tools require **autoconf 2.70+**. Ubuntu 20.04 ships 2.69 — build from source:

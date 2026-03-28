@@ -53,10 +53,7 @@ if [ ! -d "$VCPKG_ROOT" ]; then
     "$VCPKG_ROOT/bootstrap-vcpkg.sh"
 fi
 
-# Copy custom triplets and toolchains to vcpkg
-echo "Installing custom triplets..."
-mkdir -p "$VCPKG_ROOT/triplets/community"
-cp "$SCRIPT_DIR/triplets/"*.cmake "$VCPKG_ROOT/triplets/community/"
+# Copy custom toolchains to vcpkg (triplets are passed via --overlay-triplets)
 if ls "$SCRIPT_DIR/toolchains/"*.cmake &>/dev/null; then
     cp "$SCRIPT_DIR/toolchains/"*.cmake "$VCPKG_ROOT/scripts/toolchains/"
 fi
@@ -72,10 +69,23 @@ fi
 echo "Running vcpkg install with binary caching..."
 "$VCPKG_ROOT/vcpkg" install \
     --triplet="$TRIPLET" \
+    --overlay-triplets="$SCRIPT_DIR/triplets" \
     --overlay-ports="$SCRIPT_DIR/ports" \
     --x-manifest-root="$SCRIPT_DIR" \
     --x-install-root="$OUTPUT_DIR/installed" \
-    --binarysource="clear;files,$VCPKG_BINARY_CACHE,readwrite"
+    --binarysource="clear;files,$VCPKG_BINARY_CACHE,readwrite" \
+    || {
+        echo ""
+        echo "=== vcpkg install failed — dumping build logs ==="
+        for log in "$VCPKG_ROOT/buildtrees"/*/install-*-rel-out.log \
+                   "$VCPKG_ROOT/buildtrees"/*/config-*-rel-out.log; do
+            [ -f "$log" ] || continue
+            echo ""
+            echo "--- $log ---"
+            tail -200 "$log"
+        done
+        exit 1
+    }
 
 # Copy final libraries to output
 echo "Copying libraries to output directory..."
