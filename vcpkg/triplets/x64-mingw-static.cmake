@@ -3,6 +3,10 @@ set(VCPKG_CRT_LINKAGE static)
 set(VCPKG_LIBRARY_LINKAGE static)
 set(VCPKG_BUILD_TYPE release)
 
+if(PORT STREQUAL "openal-soft")
+    set(VCPKG_LIBRARY_LINKAGE dynamic)
+endif()
+
 # Pass through PATH to find MinGW cross-compiler
 set(VCPKG_ENV_PASSTHROUGH PATH)
 
