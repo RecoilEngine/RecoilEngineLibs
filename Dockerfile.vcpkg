@@ -1,14 +1,11 @@
-FROM ubuntu:24.04
+FROM ubuntu:20.04
 
 # Avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install build dependencies
-# Ubuntu 24.04 ships GCC 13 and autoconf 2.71 natively — no PPA needed
 RUN apt-get update && apt-get install -y \
     build-essential \
-    gcc-13 \
-    g++-13 \
     cmake \
     git \
     curl \
@@ -24,7 +21,6 @@ RUN apt-get update && apt-get install -y \
     libxi-dev \
     python3 \
     python3-pip \
-    autoconf \
     autoconf-archive \
     automake \
     libtool \
@@ -32,9 +28,28 @@ RUN apt-get update && apt-get install -y \
     zip \
     mingw-w64 \
     mingw-w64-tools \
-    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 130 \
-    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 130 \
     && rm -rf /var/lib/apt/lists/*
+
+# Install GCC 13 from ubuntu-toolchain-r/test PPA
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get install -y gcc-13 g++-13 && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 130 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 130 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install autoconf 2.71 from source.
+# Ubuntu 20.04 ships autoconf 2.69, but gperf 3.3 (a vcpkg host tool) requires >= 2.70.
+# /usr/local/bin takes precedence over /usr/bin so this shadows the system 2.69.
+RUN curl -sSL https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz \
+      | tar -xz \
+    && cd autoconf-2.71 \
+    && ./configure --prefix=/usr/local \
+    && make -j$(nproc) \
+    && make install \
+    && cd .. && rm -rf autoconf-2.71
 
 # Set up working directory
 WORKDIR /build
