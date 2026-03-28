@@ -53,10 +53,13 @@ if [ ! -d "$VCPKG_ROOT" ]; then
     "$VCPKG_ROOT/bootstrap-vcpkg.sh"
 fi
 
-# Copy custom triplets to vcpkg
+# Copy custom triplets and toolchains to vcpkg
 echo "Installing custom triplets..."
 mkdir -p "$VCPKG_ROOT/triplets/community"
 cp "$SCRIPT_DIR/triplets/"*.cmake "$VCPKG_ROOT/triplets/community/"
+if ls "$SCRIPT_DIR/toolchains/"*.cmake &>/dev/null; then
+    cp "$SCRIPT_DIR/toolchains/"*.cmake "$VCPKG_ROOT/scripts/toolchains/"
+fi
 
 # Ensure binary cache directory exists
 if [ ! -d "$VCPKG_BINARY_CACHE" ]; then

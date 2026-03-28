@@ -13,3 +13,5 @@ set(VCPKG_CMAKE_CONFIGURE_OPTIONS
 )
 
 set(VCPKG_CMAKE_SYSTEM_NAME Linux)
+# vcpkg's built-in linux.cmake detects arm64/aarch64 and automatically uses
+# aarch64-linux-gnu-gcc — no custom chainload needed.

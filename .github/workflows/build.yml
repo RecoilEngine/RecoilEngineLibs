@@ -1,69 +1,100 @@
-name: Build Linux-64 Static Libs
+name: Build Static Libraries
+
 on:
   workflow_dispatch:
     inputs:
-      archtune-flags:
-        description: Arch/Tune Flags
+      release_tag:
+        description: 'Release tag (e.g. v1.0.0) — leave empty to build without publishing'
         required: false
-        default: "generic"
-      publish:
-        description: "Publish to release branches"
-        type: boolean
-        default: true
+        type: string
   pull_request:
   push:
-    branches:
-      - master
+    branches: [master]
+
 jobs:
   build:
-    name: build ubuntu-${{ matrix.ubuntu_version }}${{ matrix.arch_suffix }}
-    runs-on: ubuntu-24.04${{ matrix.arch_suffix }}
+    name: ${{ matrix.target }}
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
       matrix:
-        ubuntu_version: ["20.04", "18.04"]
-        arch_suffix: ["", "-arm"]
+        include:
+          - target: linux-amd64
+            triplet: x64-linux-generic
+          - target: linux-arm64
+            triplet: arm64-linux
+          - target: mingw
+            triplet: x64-mingw-static
+
     steps:
-      - uses: actions/checkout@v5
-      - name: Create builder
-        run: docker build --build-arg UBUNTU_VERSION=${{ matrix.ubuntu_version }} -f _scripts/Dockerfile -t builder .
-      - name: Compile libraries
-        run: |
-          mkdir build
-          docker run -i --rm \
-            -v /etc/passwd:/etc/passwd:ro \
-            -v /etc/group:/etc/group:ro \
-            --user="$(id -u):$(id -g)" \
-            -v $(pwd)/build:/build:rw \
-            builder /scripts/make_static_libs.sh /build "${{ github.event.inputs.archtune-flags }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build base image
+        uses: docker/build-push-action@v6
         with:
-          name: build-${{ matrix.ubuntu_version }}${{ matrix.arch_suffix }}
-          path: build
+          context: .
+          file: docker/base.Dockerfile
+          tags: spring-static-libs-base:latest
+          load: true
+          cache-from: type=gha,scope=base
+          cache-to: type=gha,mode=max,scope=base
+
+      - name: Build ${{ matrix.target }} image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/${{ matrix.target }}.Dockerfile
+          tags: spring-static-libs-${{ matrix.target }}:latest
+          load: true
+          cache-from: type=gha,scope=${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.target }}
+
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v4
+        with:
+          path: vcpkg-binary-cache
+          key: vcpkg-${{ matrix.triplet }}-${{ hashFiles('vcpkg/vcpkg.json', 'vcpkg/ports/**') }}
+          restore-keys: vcpkg-${{ matrix.triplet }}-
+
+      - name: Build libraries
+        run: |
+          mkdir -p output vcpkg-binary-cache
+          docker run --rm \
+            -v "$(pwd)/vcpkg-binary-cache:/cache/vcpkg-binary-cache" \
+            -v "$(pwd)/output:/build/spring-static-libs/output" \
+            spring-static-libs-${{ matrix.target }}:latest
+
+      - name: Package output
+        run: |
+          tar -czf spring-static-libs-${{ matrix.triplet }}.tar.gz \
+            -C output/installed/${{ matrix.triplet }} .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spring-static-libs-${{ matrix.triplet }}
+          path: spring-static-libs-${{ matrix.triplet }}.tar.gz
           retention-days: 7
-  publish:
-    name: publish ${{ matrix.ubuntu_version }}${{ matrix.arch_suffix }} branch
+
+  release:
+    name: Publish Release ${{ inputs.release_tag }}
     needs: build
-    if: github.event_name == 'workflow_dispatch' && inputs.publish == true
+    if: github.event_name == 'workflow_dispatch' && inputs.release_tag != ''
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    strategy:
-      matrix:
-        ubuntu_version: ["20.04", "18.04"]
-        arch_suffix: ["", "-arm"]
     steps:
-      - name: Checkout target branch
-        uses: actions/checkout@v5
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
         with:
-          ref: ${{ matrix.ubuntu_version }}${{ matrix.arch_suffix }}
-      - name: Clean up old versions
-        run: rm -rf ./*
-      - name: Fetch new build
-        uses: actions/download-artifact@v5
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: build-${{ matrix.ubuntu_version }}${{ matrix.arch_suffix }}
-      - name: Commit and push
-        uses: stefanzweifel/git-auto-commit-action@v6
-        with:
-          commit_message: Automatic build from ${{ github.sha }}
+          tag_name: ${{ inputs.release_tag }}
+          name: ${{ inputs.release_tag }}
+          files: spring-static-libs-*.tar.gz
+          fail_on_unmatched_files: true
