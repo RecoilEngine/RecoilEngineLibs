@@ -1,4 +1,5 @@
-FROM spring-static-libs-base:latest
+ARG BASE_IMAGE=recoil-libs-base:latest
+FROM ${BASE_IMAGE}
 
 # Install GCC 13 from ubuntu-toolchain-r/test PPA
 RUN apt-get update && \

@@ -1,4 +1,5 @@
-FROM spring-static-libs-base:latest
+ARG BASE_IMAGE=recoil-libs-base:latest
+FROM ${BASE_IMAGE}
 
 # Install aarch64 cross-compilation toolchain.
 # gcc-aarch64-linux-gnu provides the unversioned symlinks vcpkg's linux.cmake expects.

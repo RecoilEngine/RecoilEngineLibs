@@ -36,7 +36,7 @@ jobs:
         with:
           context: .
           file: docker/base.Dockerfile
-          tags: spring-static-libs-base:latest
+          tags: recoil-libs-base:latest
           load: true
           cache-from: type=gha,scope=base
           cache-to: type=gha,mode=max,scope=base
@@ -46,8 +46,9 @@ jobs:
         with:
           context: .
           file: docker/${{ matrix.target }}.Dockerfile
-          tags: spring-static-libs-${{ matrix.target }}:latest
+          tags: recoil-libs-${{ matrix.target }}:latest
           load: true
+          build-args: BASE_IMAGE=recoil-libs-base:latest
           cache-from: type=gha,scope=${{ matrix.target }}
           cache-to: type=gha,mode=max,scope=${{ matrix.target }}
 
@@ -64,7 +65,7 @@ jobs:
           docker run --rm \
             -v "$(pwd)/vcpkg-binary-cache:/cache/vcpkg-binary-cache" \
             -v "$(pwd)/output:/build/spring-static-libs/output" \
-            spring-static-libs-${{ matrix.target }}:latest
+            recoil-libs-${{ matrix.target }}:latest
 
       - name: Package output
         run: |

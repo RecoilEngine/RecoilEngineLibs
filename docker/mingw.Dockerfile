@@ -1,4 +1,5 @@
-FROM spring-static-libs-base:latest
+ARG BASE_IMAGE=recoil-libs-base:latest
+FROM ${BASE_IMAGE}
 
 # Install MinGW-w64 cross-compilation toolchain.
 # Switch to POSIX threading model so std::thread / std::mutex are available.
