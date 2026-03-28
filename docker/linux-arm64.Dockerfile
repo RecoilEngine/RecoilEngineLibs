@@ -9,10 +9,8 @@ RUN apt-get update && apt-get install -y \
         g++-aarch64-linux-gnu \
         gcc-10-aarch64-linux-gnu \
         g++-10-aarch64-linux-gnu \
-    && update-alternatives \
-        --set aarch64-linux-gnu-gcc /usr/bin/aarch64-linux-gnu-gcc-10 \
-    && update-alternatives \
-        --set aarch64-linux-gnu-g++ /usr/bin/aarch64-linux-gnu-g++-10 \
+    && ln -sf /usr/bin/aarch64-linux-gnu-gcc-10 /usr/bin/aarch64-linux-gnu-gcc \
+    && ln -sf /usr/bin/aarch64-linux-gnu-g++-10 /usr/bin/aarch64-linux-gnu-g++ \
     && rm -rf /var/lib/apt/lists/*
 
 COPY vcpkg/ /build/spring-static-libs/vcpkg/
