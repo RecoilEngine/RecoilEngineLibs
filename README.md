@@ -97,7 +97,7 @@ docker build --build-arg BASE_IMAGE=recoil-libs-base:latest \
              -t recoil-libs-linux-amd64:latest \
              -f docker/linux-amd64.Dockerfile .
 docker run --rm \
-    -v "$(pwd)/output:/build/spring-static-libs/output" \
+    -v "$(pwd)/output:/build/recoil-engine-libs/output" \
     recoil-libs-linux-amd64:latest
 ```
 

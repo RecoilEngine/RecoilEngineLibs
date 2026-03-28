@@ -37,7 +37,7 @@ case $ARCH_INPUT in
         ;;
 esac
 
-echo "=== Building Spring Static Libraries ==="
+echo "=== Building Recoil Engine Libraries ==="
 echo "Architecture: $ARCH_INPUT"
 echo "Triplet: $TRIPLET"
 echo "VCPKG_ROOT: $VCPKG_ROOT"
