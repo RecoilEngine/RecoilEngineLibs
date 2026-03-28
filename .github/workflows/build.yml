@@ -18,17 +18,20 @@ env:
 jobs:
   build:
     name: ${{ matrix.target }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - target: linux-amd64
             triplet: x64-linux-generic
+            runner: ubuntu-latest
           - target: linux-arm64
             triplet: arm64-linux
+            runner: ubuntu-24.04-arm
           - target: mingw
             triplet: x64-mingw-static
+            runner: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v6
@@ -43,8 +46,8 @@ jobs:
           file: docker/base.Dockerfile
           tags: recoil-libs-base:latest
           load: true
-          cache-from: type=gha,scope=base
-          cache-to: type=gha,mode=max,scope=base
+          cache-from: type=gha,scope=base-${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=base-${{ matrix.target }}
 
       - name: Build ${{ matrix.target }} image
         run: |

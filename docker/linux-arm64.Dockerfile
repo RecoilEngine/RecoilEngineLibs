@@ -1,16 +1,35 @@
 ARG BASE_IMAGE=recoil-libs-base:latest
 FROM ${BASE_IMAGE}
 
-# Install aarch64 cross-compilation toolchain.
-# gcc-aarch64-linux-gnu provides the unversioned symlinks vcpkg's linux.cmake expects.
-# gcc-10-aarch64-linux-gnu is the highest version available on Ubuntu 20.04.
-RUN apt-get update && apt-get install -y \
-        gcc-aarch64-linux-gnu \
-        g++-aarch64-linux-gnu \
-        gcc-10-aarch64-linux-gnu \
-        g++-10-aarch64-linux-gnu \
-    && ln -sf /usr/bin/aarch64-linux-gnu-gcc-10 /usr/bin/aarch64-linux-gnu-gcc \
-    && ln -sf /usr/bin/aarch64-linux-gnu-g++-10 /usr/bin/aarch64-linux-gnu-g++ \
+# Install GCC 13 from ubuntu-toolchain-r/test PPA and system development
+# libraries needed by SDL2, DevIL, fontconfig, etc.
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get install -y \
+        gcc-13 \
+        g++-13 \
+        python3-venv \
+        ninja-build \
+        linux-libc-dev \
+        libgl1-mesa-dev \
+        libglu1-mesa-dev \
+        libx11-dev \
+        libxext-dev \
+        libxrandr-dev \
+        libxinerama-dev \
+        libxcursor-dev \
+        libxi-dev \
+        libxft-dev \
+        libasound2-dev \
+        libpulse-dev \
+        libdrm-dev \
+        libgbm-dev \
+        libwayland-dev \
+        libxkbcommon-dev \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 130 \
+    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 130 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY vcpkg/ /build/recoil-libs/vcpkg/
