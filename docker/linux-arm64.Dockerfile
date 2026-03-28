@@ -1,11 +1,9 @@
 ARG BASE_IMAGE=recoil-libs-base:latest
 FROM ${BASE_IMAGE}
 
-# Install GCC 13 from ubuntu-toolchain-r/test PPA and system development
-# libraries needed by SDL2, DevIL, fontconfig, etc.
-RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
-    apt-get update && \
-    apt-get install -y \
+# GCC 13 and system dev libraries for SDL2, DevIL, fontconfig, etc.
+# (ubuntu-toolchain-r PPA is already added in the base image)
+RUN apt-get update && apt-get install -y \
         gcc-13 \
         g++-13 \
         ninja-build \

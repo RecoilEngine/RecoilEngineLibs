@@ -16,18 +16,23 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-# Ubuntu 18.04 ships Python 3.6 — meson (used by vcpkg ports) requires >= 3.7.
-RUN add-apt-repository -y ppa:deadsnakes/ppa && \
-    apt-get update && apt-get install -y \
-        python3.10 \
-        python3.10-venv \
-        python3.10-distutils \
-    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 100 \
-    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10 \
-    && rm -rf /var/lib/apt/lists/*
+# Add GCC PPA while system python3 (3.6) is still default —
+# add-apt-repository requires the apt_pkg C extension which is built for 3.6.
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    rm -rf /var/lib/apt/lists/*
+
+# Pre-built Python 3.12 from python-build-standalone (works on glibc 2.17+).
+# Ubuntu 18.04's Python 3.6 is too old for meson/jinja2 needed by vcpkg ports.
+RUN ARCH=$(uname -m) && \
+    wget -q "https://github.com/astral-sh/python-build-standalone/releases/download/20260325/cpython-3.12.13%2B20260325-${ARCH}-unknown-linux-gnu-install_only_stripped.tar.gz" \
+         -O python.tar.gz && \
+    tar -xzf python.tar.gz -C /usr/local --strip-components=1 && \
+    rm python.tar.gz && \
+    ln -sf /usr/local/bin/python3.12 /usr/local/bin/python3 && \
+    python3 -m ensurepip --upgrade
 
 # Ubuntu 18.04 ships cmake 3.10 — vcpkg needs >= 3.20.
-RUN CMAKE_VERSION=3.31.6 && \
+RUN CMAKE_VERSION=3.31.11 && \
     ARCH=$(uname -m) && \
     wget -q "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz" && \
     tar -xzf "cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz" --strip-components=1 -C /usr/local && \
