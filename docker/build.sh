@@ -45,4 +45,6 @@ esac
 
 echo ""
 echo "Done. Run a build with:"
-echo "  docker run --rm -v \$PWD/output:/build/output recoil-libs-<target>:latest"
+echo "  docker run --rm -v \$PWD/output:/build/recoil-libs/output -v \$PWD/vcpkg-binary-cache:/cache/vcpkg-binary-cache recoil-libs-linux-amd64:latest"
+echo "  docker run --rm -v \$PWD/output:/build/recoil-libs/output -v \$PWD/vcpkg-binary-cache:/cache/vcpkg-binary-cache recoil-libs-linux-arm64:latest"
+echo "  docker run --rm -v \$PWD/output:/build/recoil-libs/output -v \$PWD/vcpkg-binary-cache:/cache/vcpkg-binary-cache recoil-libs-mingw:latest"
