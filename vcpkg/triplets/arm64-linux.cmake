@@ -5,10 +5,6 @@ set(VCPKG_BUILD_TYPE release)
 
 # System-provided on Linux — build dynamic so other ports can compile
 # against the headers, but the engine links the distro's own .so at runtime.
-if(PORT MATCHES "^(freetype|fontconfig)$")
-    set(VCPKG_LIBRARY_LINKAGE dynamic)
-endif()
-
 if(PORT STREQUAL "openal-soft")
     set(VCPKG_LIBRARY_LINKAGE dynamic)
     # GCC 13 + old binutils 2.34: protected-visibility relocations fail with ld.bfd
