@@ -293,13 +293,140 @@ include(${CMAKE_ROOT}/Modules/FindDevIL.cmake)
 message(STATUS "Installed FindDevIL.cmake wrapper")
 
 # ---------------------------------------------------------------------------
+# FindPNG.cmake wrapper
+# ---------------------------------------------------------------------------
+# libpng ships a PNGConfig.cmake (share/png/) but cmake's built-in FindPNG
+# module runs in MODULE mode and finds the system libpng16.so instead of our
+# static libpng16.a.  CONFIG mode via find_package(PNG CONFIG) can also pick
+# up a system PNGConfig.cmake if CMAKE_PREFIX_PATH isn't populated yet.
+#
+# The wrapper is self-sufficient: it uses CMAKE_CURRENT_LIST_DIR (the
+# cmake/modules/ directory) to derive the install prefix and directly creates
+# PNG::PNG pointing to our libpng16.a — no reliance on PREFIX_PATH ordering.
+
+file(WRITE "${_MODULES_DIR}/FindPNG.cmake" [=[
+# Try CONFIG mode first in case the caller set up CMAKE_PREFIX_PATH already.
+# Guard against accidentally picking up a system PNGConfig by checking that
+# the resolved library is a static archive.
+find_package(PNG CONFIG QUIET)
+if(TARGET PNG::PNG)
+    get_target_property(_png_loc PNG::PNG IMPORTED_LOCATION)
+    if(NOT _png_loc)
+        # INTERFACE target — follow through to png_static
+        get_target_property(_png_iface PNG::PNG INTERFACE_LINK_LIBRARIES)
+        foreach(_t IN LISTS _png_iface)
+            if(TARGET "${_t}")
+                get_target_property(_png_loc "${_t}" IMPORTED_LOCATION)
+                if(_png_loc)
+                    break()
+                endif()
+            endif()
+        endforeach()
+        unset(_png_iface)
+        unset(_t)
+    endif()
+    if(_png_loc MATCHES "\\.a$")
+        set(PNG_FOUND TRUE)
+        get_target_property(PNG_PNG_INCLUDE_DIR PNG::PNG INTERFACE_INCLUDE_DIRECTORIES)
+        set(PNG_INCLUDE_DIRS "${PNG_PNG_INCLUDE_DIR}")
+        set(PNG_LIBRARIES PNG::PNG)
+        unset(_png_loc)
+        return()
+    endif()
+    unset(_png_loc)
+    # CONFIG found a shared lib — drop it and build our own target below.
+endif()
+
+# Derive install prefix from our location: cmake/modules/ → ../../
+get_filename_component(_recoil_prefix "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
+find_library(_png_lib NAMES png16 png
+    PATHS "${_recoil_prefix}/lib"
+    NO_DEFAULT_PATH)
+if(_png_lib AND _png_lib MATCHES "\\.a$")
+    if(NOT TARGET PNG::png_static)
+        add_library(PNG::png_static STATIC IMPORTED GLOBAL)
+        set_target_properties(PNG::png_static PROPERTIES
+            IMPORTED_LOCATION "${_png_lib}"
+            INTERFACE_INCLUDE_DIRECTORIES "${_recoil_prefix}/include/libpng16"
+            INTERFACE_LINK_LIBRARIES "ZLIB::ZLIB;m")
+    endif()
+    if(NOT TARGET PNG::PNG)
+        add_library(PNG::PNG INTERFACE IMPORTED GLOBAL)
+        set_target_properties(PNG::PNG PROPERTIES
+            INTERFACE_LINK_LIBRARIES "PNG::png_static")
+    endif()
+    set(PNG_FOUND TRUE)
+    set(PNG_PNG_INCLUDE_DIR "${_recoil_prefix}/include/libpng16")
+    set(PNG_INCLUDE_DIRS "${_recoil_prefix}/include/libpng16")
+    set(PNG_LIBRARIES PNG::PNG)
+    unset(_png_lib CACHE)
+    unset(_recoil_prefix)
+    return()
+endif()
+unset(_png_lib CACHE)
+unset(_recoil_prefix)
+
+include(${CMAKE_ROOT}/Modules/FindPNG.cmake)
+]=])
+message(STATUS "Installed FindPNG.cmake wrapper")
+
+# ---------------------------------------------------------------------------
+# FindJPEG.cmake wrapper
+# ---------------------------------------------------------------------------
+# libjpeg-turbo exports libjpeg-turbo::jpeg-static, not the canonical
+# JPEG::JPEG target that cmake's FindJPEG module creates.  DevILConfig.cmake
+# lists JPEG::JPEG in INTERFACE_LINK_LIBRARIES, so without this wrapper
+# JPEG::JPEG is either undefined or resolves to the system libjpeg.so.
+# Same self-sufficient prefix-relative fallback as FindPNG.cmake above.
+
+file(WRITE "${_MODULES_DIR}/FindJPEG.cmake" [=[
+find_package(libjpeg-turbo CONFIG QUIET)
+if(TARGET libjpeg-turbo::jpeg-static)
+    if(NOT TARGET JPEG::JPEG)
+        add_library(JPEG::JPEG INTERFACE IMPORTED GLOBAL)
+        set_target_properties(JPEG::JPEG PROPERTIES
+            INTERFACE_LINK_LIBRARIES "libjpeg-turbo::jpeg-static")
+    endif()
+    set(JPEG_FOUND TRUE)
+    get_target_property(JPEG_INCLUDE_DIRS libjpeg-turbo::jpeg-static INTERFACE_INCLUDE_DIRECTORIES)
+    set(JPEG_LIBRARIES JPEG::JPEG)
+    return()
+endif()
+
+# Prefix-relative fallback: cmake/modules/ → ../../
+get_filename_component(_recoil_prefix "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
+find_library(_jpeg_lib NAMES jpeg
+    PATHS "${_recoil_prefix}/lib"
+    NO_DEFAULT_PATH)
+if(_jpeg_lib AND _jpeg_lib MATCHES "\\.a$")
+    if(NOT TARGET JPEG::JPEG)
+        add_library(JPEG::JPEG STATIC IMPORTED GLOBAL)
+        set_target_properties(JPEG::JPEG PROPERTIES
+            IMPORTED_LOCATION "${_jpeg_lib}"
+            INTERFACE_INCLUDE_DIRECTORIES "${_recoil_prefix}/include")
+    endif()
+    set(JPEG_FOUND TRUE)
+    set(JPEG_INCLUDE_DIRS "${_recoil_prefix}/include")
+    set(JPEG_LIBRARIES JPEG::JPEG)
+    unset(_jpeg_lib CACHE)
+    unset(_recoil_prefix)
+    return()
+endif()
+unset(_jpeg_lib CACHE)
+unset(_recoil_prefix)
+
+include(${CMAKE_ROOT}/Modules/FindJPEG.cmake)
+]=])
+message(STATUS "Installed FindJPEG.cmake wrapper")
+
+# ---------------------------------------------------------------------------
 # recoil-libs.cmake — consumer setup file
 # ---------------------------------------------------------------------------
 # The engine includes this file once:
 #   include(<install_prefix>/recoil-libs.cmake)
 # It adds the install prefix to CMAKE_PREFIX_PATH and sets
 # CMAKE_FIND_PACKAGE_PREFER_CONFIG so that our fixed CONFIG files
-# (freetype, tiff, fontconfig, devil) take priority over cmake's
+# (freetype, tiff, fontconfig, devil, png, jpeg) take priority over cmake's
 # built-in Find modules which lack transitive dependency info.
 # It also adds cmake/modules to CMAKE_MODULE_PATH as a fallback.
 
