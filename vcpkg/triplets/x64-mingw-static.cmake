@@ -3,8 +3,8 @@ set(VCPKG_CRT_LINKAGE static)
 set(VCPKG_LIBRARY_LINKAGE static)
 set(VCPKG_BUILD_TYPE release)
 
-# OpenAL Soft is built as a DLL (OpenAL32.dll) — shipped alongside the executable.
-if(PORT STREQUAL "openal-soft")
+# These are shipped as DLLs alongside the executable.
+if(PORT MATCHES "^(openal-soft|freetype|fontconfig|devil)$")
     set(VCPKG_LIBRARY_LINKAGE dynamic)
 endif()
 

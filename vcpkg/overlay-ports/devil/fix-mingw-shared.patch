@@ -1,0 +1,54 @@
+diff --git a/DevIL/CMakeLists.txt b/DevIL/CMakeLists.txt
+index 305f272..4dcc348 100644
+--- a/DevIL/CMakeLists.txt
++++ b/DevIL/CMakeLists.txt
+@@ -4,5 +4,4 @@ project(ImageLib)
+ 
+ add_subdirectory(src-IL)
+ add_subdirectory(src-ILU)
+-add_subdirectory(src-ILUT)
+ 
+diff --git a/DevIL/src-IL/CMakeLists.txt b/DevIL/src-IL/CMakeLists.txt
+index 02e4f03..cece303 100644
+--- a/DevIL/src-IL/CMakeLists.txt
++++ b/DevIL/src-IL/CMakeLists.txt
+@@ -33,7 +33,7 @@ include_directories( include ../include )
+ # for windows add the .def and .rc files to the source list
+ if(WIN32)
+     #add_definitions(-DIL_USE_PRAGMA_LIBS)
+-	if(BUILD_SHARED_LIBS)
++	if(BUILD_SHARED_LIBS AND MSVC)
+ 		#ADD_DEFINITIONS(-DIL_DLL -DMNG_DLL -DMNG_USE_DLL -DJPEGDLL)
+ 		add_definitions(-DIL_DLL -DJPEGSTATIC)
+         # note: .def not used for now - __declspec() in source handles export.
+@@ -46,6 +46,8 @@ if(WIN32)
+         set(DevIL_TXT ${DevIL_TXT} ../AUTHORS ../ChangeLog ../CREDITS ../libraries.txt ../README.md ../README.cmake ../TODO)
+ #		SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /NODEFAULTLIB:msvcrt.lib ")
+ 		set(CMAKE_C_FLAGS_RELEASE "/MT /O2")
++	elseif(BUILD_SHARED_LIBS)
++		add_definitions(-DIL_DLL)
+ 	else(BUILD_SHARED_LIBS)
+ 		add_definitions(-DIL_STATIC_LIB -DJPEGSTATIC)
+ 	endif(BUILD_SHARED_LIBS)
+diff --git a/DevIL/src-ILU/CMakeLists.txt b/DevIL/src-ILU/CMakeLists.txt
+index 17a3afe..29beeb3 100644
+--- a/DevIL/src-ILU/CMakeLists.txt
++++ b/DevIL/src-ILU/CMakeLists.txt
+@@ -23,7 +23,7 @@ include_directories( include ../include )
+ # for windows add the .def and .rc files to the source list
+ if(WIN32)
+     #add_definitions(-DIL_USE_PRAGMA_LIBS)
+-	if(BUILD_SHARED_LIBS)
++	if(BUILD_SHARED_LIBS AND MSVC)
+ 		add_definitions(-DILU_DLL)
+         set(ILU_SRCS ${ILU_SRCS} msvc/ilu.def)
+ 		if(UNICODE)
+@@ -32,6 +32,8 @@ if(WIN32)
+ 			set(ILU_RSRC ${ILU_RSRC} "msvc/resources/IL Logo.ico" "msvc/ILU.rc")
+ 		endif(UNICODE)
+ 		set(CMAKE_C_FLAGS_RELEASE "/MT /O2")
++	elseif(BUILD_SHARED_LIBS)
++		add_definitions(-DILU_DLL)
+ 	else(BUILD_SHARED_LIBS)
+ 		add_definitions(-DIL_STATIC_LIB)
+ 	endif(BUILD_SHARED_LIBS)

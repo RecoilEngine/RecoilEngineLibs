@@ -155,22 +155,42 @@ find_dependency(JPEG)
 find_dependency(TIFF CONFIG)
 
 if(NOT TARGET DevIL::IL)
+    # Detect whether we have a shared (.dll.a / .so) or static (.a / .lib) build
+    find_library(_IL_IMPLIB NAMES DevIL.dll IL.dll PATHS "${_DEVIL_PREFIX}/lib" NO_DEFAULT_PATH)
     find_library(_IL_LIBRARY NAMES DevIL IL PATHS "${_DEVIL_PREFIX}/lib" NO_DEFAULT_PATH)
+    find_library(_ILU_IMPLIB NAMES ILU.dll PATHS "${_DEVIL_PREFIX}/lib" NO_DEFAULT_PATH)
     find_library(_ILU_LIBRARY NAMES ILU PATHS "${_DEVIL_PREFIX}/lib" NO_DEFAULT_PATH)
-    find_library(_ILUT_LIBRARY NAMES ILUT PATHS "${_DEVIL_PREFIX}/lib" NO_DEFAULT_PATH)
-    if(NOT _IL_LIBRARY)
+
+    if(NOT _IL_LIBRARY AND NOT _IL_IMPLIB)
         set(DevIL_FOUND FALSE)
         return()
     endif()
 
-    add_library(DevIL::IL STATIC IMPORTED)
-    set_target_properties(DevIL::IL PROPERTIES
-        IMPORTED_LOCATION "${_IL_LIBRARY}"
-        INTERFACE_INCLUDE_DIRECTORIES "${_DEVIL_PREFIX}/include"
-        INTERFACE_COMPILE_DEFINITIONS "IL_STATIC_LIB"
-        INTERFACE_LINK_LIBRARIES "ZLIB::ZLIB;PNG::PNG;JPEG::JPEG;TIFF::TIFF"
-    )
-    if(_ILU_LIBRARY)
+    if(_IL_IMPLIB)
+        # Shared (DLL) build — import lib + DLL
+        add_library(DevIL::IL SHARED IMPORTED)
+        set_target_properties(DevIL::IL PROPERTIES
+            IMPORTED_IMPLIB "${_IL_IMPLIB}"
+            INTERFACE_INCLUDE_DIRECTORIES "${_DEVIL_PREFIX}/include"
+        )
+    else()
+        # Static build
+        add_library(DevIL::IL STATIC IMPORTED)
+        set_target_properties(DevIL::IL PROPERTIES
+            IMPORTED_LOCATION "${_IL_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${_DEVIL_PREFIX}/include"
+            INTERFACE_COMPILE_DEFINITIONS "IL_STATIC_LIB"
+            INTERFACE_LINK_LIBRARIES "ZLIB::ZLIB;PNG::PNG;JPEG::JPEG;TIFF::TIFF"
+        )
+    endif()
+
+    if(_ILU_IMPLIB)
+        add_library(DevIL::ILU SHARED IMPORTED)
+        set_target_properties(DevIL::ILU PROPERTIES
+            IMPORTED_IMPLIB "${_ILU_IMPLIB}"
+            INTERFACE_INCLUDE_DIRECTORIES "${_DEVIL_PREFIX}/include"
+        )
+    elseif(_ILU_LIBRARY)
         add_library(DevIL::ILU STATIC IMPORTED)
         set_target_properties(DevIL::ILU PROPERTIES
             IMPORTED_LOCATION "${_ILU_LIBRARY}"
@@ -179,18 +199,11 @@ if(NOT TARGET DevIL::IL)
             INTERFACE_LINK_LIBRARIES "DevIL::IL"
         )
     endif()
-    if(_ILUT_LIBRARY)
-        add_library(DevIL::ILUT STATIC IMPORTED)
-        set_target_properties(DevIL::ILUT PROPERTIES
-            IMPORTED_LOCATION "${_ILUT_LIBRARY}"
-            INTERFACE_INCLUDE_DIRECTORIES "${_DEVIL_PREFIX}/include"
-            INTERFACE_COMPILE_DEFINITIONS "IL_STATIC_LIB"
-            INTERFACE_LINK_LIBRARIES "DevIL::ILU"
-        )
-    endif()
+
+    unset(_IL_IMPLIB CACHE)
     unset(_IL_LIBRARY CACHE)
+    unset(_ILU_IMPLIB CACHE)
     unset(_ILU_LIBRARY CACHE)
-    unset(_ILUT_LIBRARY CACHE)
 endif()
 
 set(DevIL_FOUND TRUE)
@@ -198,7 +211,6 @@ set(IL_FOUND TRUE)
 set(IL_INCLUDE_DIR "${_DEVIL_PREFIX}/include")
 set(IL_LIBRARIES DevIL::IL)
 set(ILU_LIBRARIES DevIL::ILU)
-set(ILUT_LIBRARIES DevIL::ILUT)
 unset(_DEVIL_PREFIX)
 ]=])
     message(STATUS "Created DevILConfig.cmake")
@@ -274,9 +286,38 @@ if(TARGET DevIL::IL)
     get_target_property(IL_INCLUDE_DIR DevIL::IL INTERFACE_INCLUDE_DIRECTORIES)
     set(IL_LIBRARIES DevIL::IL)
     set(ILU_LIBRARIES DevIL::ILU)
-    set(ILUT_LIBRARIES DevIL::ILUT)
     return()
 endif()
 include(${CMAKE_ROOT}/Modules/FindDevIL.cmake)
 ]=])
 message(STATUS "Installed FindDevIL.cmake wrapper")
+
+# ---------------------------------------------------------------------------
+# recoil-libs.cmake — consumer setup file
+# ---------------------------------------------------------------------------
+# The engine includes this file once:
+#   include(<install_prefix>/recoil-libs.cmake)
+# It adds the install prefix to CMAKE_PREFIX_PATH and sets
+# CMAKE_FIND_PACKAGE_PREFER_CONFIG so that our fixed CONFIG files
+# (freetype, tiff, fontconfig, devil) take priority over cmake's
+# built-in Find modules which lack transitive dependency info.
+# It also adds cmake/modules to CMAKE_MODULE_PATH as a fallback.
+
+file(WRITE "${_INSTALL_PREFIX}/recoil-libs.cmake" [=[
+get_filename_component(_RECOIL_LIBS_PREFIX "${CMAKE_CURRENT_LIST_DIR}" ABSOLUTE)
+
+if(NOT _RECOIL_LIBS_PREFIX IN_LIST CMAKE_PREFIX_PATH)
+    list(APPEND CMAKE_PREFIX_PATH "${_RECOIL_LIBS_PREFIX}")
+endif()
+
+set(_RECOIL_MODULES "${_RECOIL_LIBS_PREFIX}/cmake/modules")
+if(IS_DIRECTORY "${_RECOIL_MODULES}" AND NOT _RECOIL_MODULES IN_LIST CMAKE_MODULE_PATH)
+    list(INSERT CMAKE_MODULE_PATH 0 "${_RECOIL_MODULES}")
+endif()
+unset(_RECOIL_MODULES)
+
+set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
+
+unset(_RECOIL_LIBS_PREFIX)
+]=])
+message(STATUS "Installed recoil-libs.cmake")
