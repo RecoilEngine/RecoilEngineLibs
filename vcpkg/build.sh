@@ -37,6 +37,11 @@ mkdir -p "$VCPKG_BINARY_CACHE"
     --x-install-root="$OUTPUT_DIR/installed" \
     --binarysource="clear;files,$VCPKG_BINARY_CACHE,readwrite"
 
+SHARE_DIR="$OUTPUT_DIR/installed/$TRIPLET/share"
+echo ""
+echo "=== Fixing cmake configs ==="
+cmake -DSHARE_DIR="$SHARE_DIR" -P "$SCRIPT_DIR/fix-cmake-configs.cmake"
+
 echo ""
 echo "=== Build complete ==="
 echo "Installed to: $OUTPUT_DIR/installed/$TRIPLET"
