@@ -30,6 +30,20 @@ vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/minizip)
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig()
 
+# minizip-ng discovers zlib/lzma via pkg-config and bakes bare library names
+# into INTERFACE_LINK_LIBRARIES.  Replace with cmake imported targets so the
+# config works outside the build container.  The find_dependency() calls in
+# minizip-config.cmake already create the required targets.
+set(_targets_file "${CURRENT_PACKAGES_DIR}/share/${PORT}/minizip.cmake")
+if(EXISTS "${_targets_file}")
+    file(READ "${_targets_file}" _contents)
+    string(REGEX REPLACE
+        [=[INTERFACE_LINK_LIBRARIES "[^"]*"]=]
+        [=[INTERFACE_LINK_LIBRARIES "ZLIB::ZLIB;LibLZMA::LibLZMA"]=]
+        _contents "${_contents}")
+    file(WRITE "${_targets_file}" "${_contents}")
+endif()
+
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
 

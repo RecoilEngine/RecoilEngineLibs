@@ -78,14 +78,21 @@ echo "Running vcpkg install with binary caching..."
     --x-install-root="$OUTPUT_DIR/installed" \
     --binarysource="clear;files,$VCPKG_BINARY_CACHE,readwrite"
 
+# Fix cmake configs for standalone consumption (outside vcpkg toolchain)
+echo "Fixing cmake configs..."
+cmake -DSHARE_DIR="$OUTPUT_DIR/installed/$TRIPLET/share" \
+    -P "$SCRIPT_DIR/fix-cmake-configs.cmake"
+
 # Copy final libraries to output
 echo "Copying libraries to output directory..."
 mkdir -p "$OUTPUT_DIR/lib"
 mkdir -p "$OUTPUT_DIR/include"
 mkdir -p "$OUTPUT_DIR/bin"
+mkdir -p "$OUTPUT_DIR/share"
 cp -r "$OUTPUT_DIR/installed/$TRIPLET/lib/"* "$OUTPUT_DIR/lib/" 2>/dev/null || true
 cp -r "$OUTPUT_DIR/installed/$TRIPLET/include/"* "$OUTPUT_DIR/include/" 2>/dev/null || true
 cp -r "$OUTPUT_DIR/installed/$TRIPLET/bin/"* "$OUTPUT_DIR/bin/" 2>/dev/null || true
+cp -r "$OUTPUT_DIR/installed/$TRIPLET/share/"* "$OUTPUT_DIR/share/" 2>/dev/null || true
 
 echo ""
 echo "=== Build complete ==="
