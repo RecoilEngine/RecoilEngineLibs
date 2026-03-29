@@ -5,6 +5,8 @@ set(VCPKG_BUILD_TYPE release)
 
 if(PORT STREQUAL "openal-soft")
     set(VCPKG_LIBRARY_LINKAGE dynamic)
+    # GCC 13 + old binutils 2.34: protected-visibility relocations fail with ld.bfd
+    set(VCPKG_LINKER_FLAGS "-fuse-ld=gold")
 endif()
 
 set(VCPKG_C_FLAGS "-march=armv8-a+crc+crypto -mtune=cortex-a72")
