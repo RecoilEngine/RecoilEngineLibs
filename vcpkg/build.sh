@@ -24,8 +24,11 @@ echo "=== Building Recoil Engine Libraries ==="
 echo "Triplet: $TRIPLET"
 echo ""
 
+VCPKG_COMMIT=$(cat "$SCRIPT_DIR/VCPKG_COMMIT")
+
 if [ ! -d "$VCPKG_ROOT" ]; then
     git clone https://github.com/microsoft/vcpkg.git "$VCPKG_ROOT"
+    git -C "$VCPKG_ROOT" checkout "$VCPKG_COMMIT"
     "$VCPKG_ROOT/bootstrap-vcpkg.sh"
 fi
 

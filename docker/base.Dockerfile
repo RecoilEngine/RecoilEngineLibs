@@ -36,7 +36,9 @@ WORKDIR /build
 
 RUN mkdir -p /cache/vcpkg-binary-cache && chmod 777 /cache/vcpkg-binary-cache
 
+COPY vcpkg/VCPKG_COMMIT /tmp/vcpkg-commit
 RUN git clone https://github.com/microsoft/vcpkg.git /build/vcpkg && \
+    git -C /build/vcpkg checkout "$(cat /tmp/vcpkg-commit)" && \
     /build/vcpkg/bootstrap-vcpkg.sh
 
 ENV VCPKG_ROOT=/build/vcpkg

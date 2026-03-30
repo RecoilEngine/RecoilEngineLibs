@@ -39,6 +39,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Set vcpkg commit
+        shell: bash
+        run: echo "VCPKG_COMMIT=$(cat vcpkg/VCPKG_COMMIT)" >> "$GITHUB_ENV"
+
       - name: Set up Docker Buildx
         if: matrix.target != 'msvc'
         uses: docker/setup-buildx-action@v4
@@ -68,13 +72,18 @@ jobs:
         shell: cmd
         run: |
           git clone https://github.com/microsoft/vcpkg.git .vcpkg
+          git -C .vcpkg checkout %VCPKG_COMMIT%
           .vcpkg\bootstrap-vcpkg.bat -disableMetrics
+
+      - name: Verify vcpkg commit in image
+        if: matrix.target != 'msvc'
+        run: docker run --rm recoil-libs-${{ matrix.target }}:latest git -C /build/vcpkg rev-parse HEAD
 
       - name: Cache vcpkg binary packages
         uses: actions/cache@v5
         with:
           path: vcpkg-binary-cache
-          key: vcpkg-${{ matrix.triplet }}-${{ hashFiles('vcpkg/vcpkg.json', 'vcpkg/overlay-ports/**') }}
+          key: vcpkg-${{ matrix.triplet }}-${{ hashFiles('vcpkg/vcpkg.json', 'vcpkg/overlay-ports/**', 'vcpkg/triplets/**') }}
           restore-keys: vcpkg-${{ matrix.triplet }}-
 
       - name: Build libraries (Docker)
