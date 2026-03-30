@@ -32,7 +32,7 @@ Pre-built libraries for the [Recoil engine](https://github.com/RecoilEngine). Bu
 Download a release tarball from the [Releases page](https://github.com/RecoilEngine/RecoilEngineLibs/releases) and extract it:
 
 ```bash
-tar -xzf recoil-libs-x64-linux-generic.tar.gz -C /opt/recoil-libs
+tar -xzf recoil-libs-x64-linux.tar.gz -C /opt/recoil-libs
 ```
 
 In your CMake project, include the setup file before calling `find_package`:
@@ -47,9 +47,9 @@ Available triplets per release:
 
 | Tarball | Target |
 |---|---|
-| `recoil-libs-x64-linux-generic.tar.gz` | Linux x86-64, SSE2 baseline, glibc 2.31+ |
+| `recoil-libs-x64-linux.tar.gz` | Linux x86-64, SSE2 baseline, glibc 2.31+ |
 | `recoil-libs-arm64-linux.tar.gz` | Linux AArch64 (Cortex-A72 tuning) |
-| `recoil-libs-x64-mingw-static.tar.gz` | Windows x86-64 via MinGW (GCC, static CRT) |
+| `recoil-libs-x64-mingw.tar.gz` | Windows x86-64 via MinGW (GCC, static CRT) |
 | `recoil-libs-x64-windows-msvc.tar.gz` | Windows x86-64 via MSVC (dynamic CRT, DLLs) |
 
 ---
@@ -141,9 +141,9 @@ vcpkg/
   fix-cmake-configs.cmake # post-install cmake config fixups
   overlay-ports/          # overlay ports (local patches, e.g. DevIL)
   triplets/               # custom vcpkg triplets
-    x64-linux-generic.cmake
+    x64-linux.cmake
     arm64-linux.cmake
-    x64-mingw-static.cmake
+    x64-mingw.cmake
     x64-windows-msvc.cmake
 docker/
   base.Dockerfile         # Ubuntu 20.04 + build tools + vcpkg bootstrap

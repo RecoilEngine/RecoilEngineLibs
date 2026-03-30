@@ -24,13 +24,13 @@ jobs:
       matrix:
         include:
           - target: linux-amd64
-            triplet: x64-linux-generic
+            triplet: x64-linux
             runner: ubuntu-latest
           - target: linux-arm64
             triplet: arm64-linux
             runner: ubuntu-24.04-arm
           - target: mingw
-            triplet: x64-mingw-static
+            triplet: x64-mingw
             runner: ubuntu-latest
           - target: msvc
             triplet: x64-windows-msvc

@@ -9,9 +9,9 @@ OUTPUT_DIR=${OUTPUT_DIR:-$PROJECT_ROOT/output}
 VCPKG_BINARY_CACHE=${VCPKG_BINARY_CACHE:-/cache/vcpkg-binary-cache}
 
 case $ARCH_INPUT in
-    generic)                      TRIPLET="x64-linux-generic" ;;
+    generic)                      TRIPLET="x64-linux" ;;
     arm64)                        TRIPLET="arm64-linux" ;;
-    mingw-static|x64-mingw-static) TRIPLET="x64-mingw-static" ;;
+    mingw-static|x64-mingw) TRIPLET="x64-mingw" ;;
     msvc|x64-windows-msvc)         TRIPLET="x64-windows-msvc" ;;
     *)
         echo "Unknown target: $ARCH_INPUT"
