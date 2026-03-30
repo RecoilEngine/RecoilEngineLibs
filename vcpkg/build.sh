@@ -12,9 +12,10 @@ case $ARCH_INPUT in
     generic)                      TRIPLET="x64-linux-generic" ;;
     arm64)                        TRIPLET="arm64-linux" ;;
     mingw-static|x64-mingw-static) TRIPLET="x64-mingw-static" ;;
+    msvc|x64-windows-msvc)         TRIPLET="x64-windows-msvc" ;;
     *)
         echo "Unknown target: $ARCH_INPUT"
-        echo "Supported: generic, arm64, mingw-static"
+        echo "Supported: generic, arm64, mingw-static, msvc"
         exit 1
         ;;
 esac

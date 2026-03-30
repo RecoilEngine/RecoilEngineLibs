@@ -32,15 +32,19 @@ jobs:
           - target: mingw
             triplet: x64-mingw-static
             runner: ubuntu-latest
+          - target: msvc
+            triplet: x64-windows-msvc
+            runner: windows-latest
 
     steps:
       - uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
+        if: matrix.target != 'msvc'
         uses: docker/setup-buildx-action@v4
 
       - name: Build base image
-        if: matrix.target != 'mingw'
+        if: matrix.target != 'mingw' && matrix.target != 'msvc'
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -51,12 +55,20 @@ jobs:
           cache-to: type=gha,mode=max,scope=base-${{ matrix.target }}
 
       - name: Build ${{ matrix.target }} image
+        if: matrix.target != 'msvc'
         run: |
           docker build \
             ${{ matrix.target != 'mingw' && '--build-arg BASE_IMAGE=recoil-libs-base:latest' || '' }} \
             -t recoil-libs-${{ matrix.target }}:latest \
             -f docker/${{ matrix.target }}.Dockerfile \
             .
+
+      - name: Bootstrap vcpkg
+        if: matrix.target == 'msvc'
+        shell: cmd
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git .vcpkg
+          .vcpkg\bootstrap-vcpkg.bat -disableMetrics
 
       - name: Cache vcpkg binary packages
         uses: actions/cache@v5
@@ -65,7 +77,8 @@ jobs:
           key: vcpkg-${{ matrix.triplet }}-${{ hashFiles('vcpkg/vcpkg.json', 'vcpkg/overlay-ports/**') }}
           restore-keys: vcpkg-${{ matrix.triplet }}-
 
-      - name: Build libraries
+      - name: Build libraries (Docker)
+        if: matrix.target != 'msvc'
         run: |
           mkdir -p output vcpkg-binary-cache
           docker run --rm \
@@ -74,8 +87,18 @@ jobs:
             -v "$(pwd)/buildlogs:/build/vcpkg/buildtrees" \
             recoil-libs-${{ matrix.target }}:latest
 
+      - name: Build libraries (MSVC)
+        if: matrix.target == 'msvc'
+        shell: bash
+        env:
+          OUTPUT_DIR: ${{ github.workspace }}/output
+          VCPKG_BINARY_CACHE: ${{ github.workspace }}/vcpkg-binary-cache
+        run: |
+          mkdir -p output vcpkg-binary-cache
+          ./vcpkg/build.sh msvc
+
       - name: Dump build failure logs
-        if: failure()
+        if: failure() && matrix.target != 'msvc'
         run: |
           for f in buildlogs/*/install-*-out.log buildlogs/*/config-*-out.log; do
             [ -f "$f" ] || continue
@@ -85,6 +108,7 @@ jobs:
           done
 
       - name: Package output
+        shell: bash
         run: |
           tar -czf recoil-libs-${{ matrix.triplet }}.tar.gz \
             -C output/installed/${{ matrix.triplet }} .

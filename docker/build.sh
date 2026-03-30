@@ -39,6 +39,7 @@ case $TARGET in
     all)          build_base && build_linux_amd64 && build_linux_arm64 && build_mingw ;;
     *)
         echo "Usage: $0 [base|linux-amd64|linux-arm64|mingw|all]"
+        echo "Note: msvc builds run natively on windows-latest (no Docker); use ./vcpkg/build.sh msvc"
         exit 1
         ;;
 esac
