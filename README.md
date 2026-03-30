@@ -4,28 +4,28 @@ Pre-built libraries for the [Recoil engine](https://github.com/RecoilEngine). Bu
 
 ## Libraries
 
-| Library | Static | Shared (DLL/so) | Notes |
-|---|---|---|---|
-| zlib | all | | |
-| libpng | all | | |
-| giflib | all | | |
-| libjpeg-turbo | all | | |
-| tiff | all | | liblzma merged into static archive |
-| DevIL (IL + ILU) | linux | mingw | ILUT excluded |
-| libunwind | linux | | |
-| openssl | all | | |
-| nghttp2 | all | | |
-| libpsl | all | | |
-| curl | all | | |
-| libogg | all | | |
-| libvorbis | all | | |
-| libuuid | linux | | |
-| liblzma | all | | |
-| minizip | all | | |
-| freetype | | all | System-provided on Linux at runtime |
-| fontconfig | | all | System-provided on Linux at runtime |
-| sdl2 | all | | |
-| openal-soft | | all | OpenAL32.dll / libopenal.so |
+| Library | linux (static) | linux (shared) | mingw (static) | mingw (shared) | msvc (shared) | Notes |
+|---|---|---|---|---|---|---|
+| zlib | ✓ | | ✓ | | ✓ | |
+| libpng | ✓ | | ✓ | | ✓ | |
+| giflib | ✓ | | ✓ | | ✓ | |
+| libjpeg-turbo | ✓ | | ✓ | | ✓ | |
+| tiff | ✓ | | ✓ | | ✓ | liblzma merged into static archive (linux/mingw) |
+| DevIL (IL + ILU) | ✓ | | | ✓ | ✓ | ILUT excluded |
+| libunwind | ✓ | | | | | |
+| openssl | ✓ | | ✓ | | ✓ | |
+| nghttp2 | ✓ | | ✓ | | ✓ | |
+| libpsl | ✓ | | ✓ | | ✓ | |
+| curl | ✓ | | ✓ | | ✓ | |
+| libogg | ✓ | | ✓ | | ✓ | |
+| libvorbis | ✓ | | ✓ | | ✓ | |
+| libuuid | ✓ | | | | | |
+| liblzma | ✓ | | ✓ | | ✓ | |
+| minizip | ✓ | | ✓ | | ✓ | |
+| freetype | ✓ | | | ✓ | ✓ | |
+| fontconfig | ✓ | | | ✓ | ✓ | |
+| sdl2 | | ✓ | ✓ | | ✓ | |
+| openal-soft | | ✓ | | ✓ | ✓ | OpenAL32.dll / libopenal.so |
 
 ## Using pre-built releases
 
@@ -50,6 +50,7 @@ Available triplets per release:
 | `recoil-libs-x64-linux-generic.tar.gz` | Linux x86-64, SSE2 baseline, glibc 2.31+ |
 | `recoil-libs-arm64-linux.tar.gz` | Linux AArch64 (Cortex-A72 tuning) |
 | `recoil-libs-x64-mingw-static.tar.gz` | Windows x86-64 via MinGW (GCC, static CRT) |
+| `recoil-libs-x64-windows-msvc.tar.gz` | Windows x86-64 via MSVC (dynamic CRT, DLLs) |
 
 ---
 
@@ -135,6 +136,7 @@ Multiple targets can run in parallel — each build uses an isolated temporary i
 ```
 vcpkg/
   vcpkg.json              # manifest — library list and version baseline
+  VCPKG_COMMIT            # pinned vcpkg commit (matches builtin-baseline)
   build.sh                # build entrypoint (works with or without Docker)
   fix-cmake-configs.cmake # post-install cmake config fixups
   overlay-ports/          # overlay ports (local patches, e.g. DevIL)
@@ -142,6 +144,7 @@ vcpkg/
     x64-linux-generic.cmake
     arm64-linux.cmake
     x64-mingw-static.cmake
+    x64-windows-msvc.cmake
 docker/
   base.Dockerfile         # Ubuntu 20.04 + build tools + vcpkg bootstrap
   linux-amd64.Dockerfile
