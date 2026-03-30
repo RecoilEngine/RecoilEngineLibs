@@ -49,7 +49,7 @@ Available triplets per release:
 |---|---|
 | `recoil-libs-x64-linux.tar.gz` | Linux x86-64, SSE2 baseline, glibc 2.31+ |
 | `recoil-libs-arm64-linux.tar.gz` | Linux AArch64 (Cortex-A72 tuning) |
-| `recoil-libs-x64-mingw.tar.gz` | Windows x86-64 via MinGW (GCC, static CRT) |
+| `recoil-libs-x64-mingw.tar.gz` | Windows x86-64 via MinGW (GCC, static CRT, mixed static/dynamic libs) |
 | `recoil-libs-x64-windows-msvc.tar.gz` | Windows x86-64 via MSVC (dynamic CRT, DLLs) |
 
 ---
@@ -86,14 +86,14 @@ Build:
 
 ```bash
 # x86-64 (SSE2 baseline)
-./vcpkg/build.sh generic
+./vcpkg/build.sh x64-linux
 
 # AArch64 (native, on an ARM64 host)
-./vcpkg/build.sh arm64
+./vcpkg/build.sh arm64-linux
 
 # MinGW cross-compile (requires mingw-w64)
 sudo apt-get install -y mingw-w64
-./vcpkg/build.sh mingw-static
+./vcpkg/build.sh x64-mingw
 ```
 
 Output lands in `output/installed/<triplet>/`.

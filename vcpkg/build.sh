@@ -9,13 +9,13 @@ OUTPUT_DIR=${OUTPUT_DIR:-$PROJECT_ROOT/output}
 VCPKG_BINARY_CACHE=${VCPKG_BINARY_CACHE:-/cache/vcpkg-binary-cache}
 
 case $ARCH_INPUT in
-    generic)                      TRIPLET="x64-linux" ;;
-    arm64)                        TRIPLET="arm64-linux" ;;
-    mingw-static|x64-mingw) TRIPLET="x64-mingw" ;;
-    msvc|x64-windows-msvc)         TRIPLET="x64-windows-msvc" ;;
+    x64-linux|x64)    TRIPLET="x64-linux" ;;
+    arm64-linux|arm64) TRIPLET="arm64-linux" ;;
+    x64-mingw|mingw)  TRIPLET="x64-mingw" ;;
+    x64-windows-msvc|msvc) TRIPLET="x64-windows-msvc" ;;
     *)
         echo "Unknown target: $ARCH_INPUT"
-        echo "Supported: generic, arm64, mingw-static, msvc"
+        echo "Supported: x64-linux, arm64-linux, x64-mingw, x64-windows-msvc"
         exit 1
         ;;
 esac
