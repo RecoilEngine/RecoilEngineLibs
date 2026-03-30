@@ -24,7 +24,7 @@ Pre-built libraries for the [Recoil engine](https://github.com/RecoilEngine). Bu
 | minizip | ✓ | | ✓ | | ✓ | |
 | freetype | ✓ | | | ✓ | ✓ | |
 | fontconfig | ✓ | | | ✓ | ✓ | |
-| sdl2 | | ✓ | ✓ | | ✓ | |
+| sdl2 | | ✓ | | ✓ | ✓ | |
 | openal-soft | | ✓ | | ✓ | ✓ | OpenAL32.dll / libopenal.so |
 
 ## Using pre-built releases

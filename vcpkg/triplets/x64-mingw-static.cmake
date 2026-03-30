@@ -4,7 +4,7 @@ set(VCPKG_LIBRARY_LINKAGE static)
 set(VCPKG_BUILD_TYPE release)
 
 # These are shipped as DLLs alongside the executable.
-if(PORT MATCHES "^(openal-soft|freetype|fontconfig|devil)$")
+if(PORT MATCHES "^(openal-soft|freetype|fontconfig|devil|sdl2)$")
     set(VCPKG_LIBRARY_LINKAGE dynamic)
 endif()
 
