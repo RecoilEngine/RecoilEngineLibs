@@ -28,4 +28,4 @@ COPY vcpkg/ /build/recoil-libs/vcpkg/
 WORKDIR /build/recoil-libs
 RUN chmod +x vcpkg/build.sh
 
-CMD ["./vcpkg/build.sh", "arm64"]
+CMD ["./vcpkg/build.sh", "arm64-linux"]
