@@ -93,6 +93,33 @@ if [ -f "$PREFIX/lib/libtiff.a" ]; then
         "$PREFIX/lib/liblzma.a"
 fi
 
+# Copy POSIX compat headers for the MSVC triplet (unistd.h etc. that MSVC lacks)
+if [[ "$TRIPLET" == x64-windows-msvc ]]; then
+    echo ""
+    echo "=== Copying POSIX compat headers ==="
+    cp -r "$PROJECT_ROOT/compat/include/." "$PREFIX/include/"
+    echo "  Copied compat headers -> $PREFIX/include/"
+fi
+
+# Bundle 7za.exe for the MSVC triplet (needed by the spring engine build to create .sdz/.zip archives).
+# MinGW builds run on Linux where 7za is found on the system PATH instead.
+if [[ "$TRIPLET" == x64-windows-msvc ]]; then
+    echo ""
+    echo "=== Bundling 7za.exe ==="
+    SEVENZIP_VERSION="2408"
+    SEVENZIP_GH_BASE="https://github.com/ip7z/7zip/releases/download/${SEVENZIP_VERSION:0:2}.${SEVENZIP_VERSION:2}"
+    TMP_7ZIP=$(mktemp -d)
+    trap "rm -rf '$TMP_7ZIP' '$INSTALL_ROOT'" EXIT
+    curl -fSL "$SEVENZIP_GH_BASE/7zr.exe" -o "$TMP_7ZIP/7zr.exe"
+    curl -fSL "$SEVENZIP_GH_BASE/7z${SEVENZIP_VERSION}-extra.7z" -o "$TMP_7ZIP/7z-extra.7z"
+    mkdir -p "$PREFIX/bin"
+    # Run 7zr.exe natively on Windows (Git Bash); cygpath converts to a Windows-style path
+    WIN_BIN_DIR="$(cygpath -w "$PREFIX/bin")"
+    "$TMP_7ZIP/7zr.exe" e "$(cygpath -w "$TMP_7ZIP/7z-extra.7z")" "-o$WIN_BIN_DIR" 7za.exe -y
+    echo "  Bundled 7za.exe -> $PREFIX/bin/7za.exe"
+    rm -rf "$TMP_7ZIP"
+fi
+
 # Copy only the target triplet output to the final location
 mkdir -p "$OUTPUT_DIR/installed"
 rm -rf "$OUTPUT_DIR/installed/$TRIPLET"
